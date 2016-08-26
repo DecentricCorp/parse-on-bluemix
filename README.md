@@ -126,7 +126,8 @@ X-Parse-Application-Id | `your app_id`
   ]
 }
 ```
-
+# Part 2: [Adding a front end dashboard using bluemix containers](https://github.com/DecentricCorp/parse-dashboard#run-on-bluemix)
+## Learn more about parse-server here [Parse Server](https://www.raywenderlich.com/128313/parse-server-tutorial)
 
 
 ### Privacy Notice
