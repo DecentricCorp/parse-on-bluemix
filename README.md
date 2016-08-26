@@ -1,46 +1,133 @@
-# Parse-on-Bluemix Overview
+# Parse-on-Bluemix RApp Overview
 
-Parse, the application framework, is shortly to retire. You can still run Parse applications yourself thanks to the open-sourced [Parse Server](https://github.com/ParsePlatform/parse-server). This project gives you some simple starter code that lets you run the Parse Server on Bluemix. You can add a MongoDB service from Compose as the app's storage layer.
+Parse, the application framework, is shortly to retire. You can still run Parse applications 
+yourself thanks to the open-sourced [Parse Server](https://github.com/ParsePlatform/parse-server). 
+This project gives you some simple starter code that lets you run the Parse Server on Bluemix. 
+You can add a MongoDB service from Compose as the app's storage layer. Optionally you can create a bluemix hosted service.
+ [mongodb on bnluemix](https://console.ng.bluemix.net/docs/#services/MongoDB/index.html#MongoDB)
 
 ## Application Requirements
 
-* Bluemix Node.js Runtime
-* Compose.io MongoDB service
+* Bluemix Node.js Runtime 
+* MongoDB service running somewhere
 
 ## Running the app on Bluemix
+* Login to bluemix using the CLI 
+* Login to containers plugin
+```
+cf login
+cf ic login
+```  
 
-The fastest way to deploy this application to Bluemix is to click the Deploy to Bluemix button below.
+* Clone this repo
+```
+git clone https://github.com/DecentricCorp/parse-on-bluemix.git
+cd parse-on-bluemix
+```
 
-[![Deploy to Bluemix](https://bluemix.net/deploy/button.png)](https://bluemix.net/deploy)
+* Create and push app to Bluemix [Notes](https://new-console.ng.bluemix.net/docs/starters/install_cli.html)
+```
+cf push app_name
+```
+*  * Rename app_name to name of your choice
 
-Once deployed:
+* Create and bind mongoDB service [Notes](https://new-console.ng.bluemix.net/docs/services/MongoDB/index.html#MongoDB)
+```
+cf create-service mongodb 100 mongodb01
+cf bind-service app_name mongodb01
+```
+* * mongodb01 can be changed to whatever name you prefer
 
-* Sign up for an account at [Compose.io](https://www.compose.io/) and provision a MongoDB service
-* Add a "MongoDB by Compose" service to your app in the Bluemix Dashboard
-* Configure the "MongoDB by Compose" service by adding the credentials of your Compose MongoDB service into the Bluemix Dashboard
+#### Note, your deployment will fail to start because the required env var's are not defined
 
-**Don't have a Bluemix account?** If you haven't already, you'll be prompted to sign up for a Bluemix account when you click the button.  Sign up, verify your email address, then return here and click the the **Deploy to Bluemix** button again. Your new credentials let you deploy to the platform and also to code online with Bluemix and Git. If you have questions about working in Bluemix, find answers in the [Bluemix Docs](https://www.ng.bluemix.net/docs/).
 
-## Environment Variables
+### Add required environment variables to deployed app
 
-### Required
-`APP_ID`
-`MASTER_KEY`
-`PARSE_MOUNT`
-`CLOUD_CODE_MAIN`
-`HTTPS`
+* Log into bluemix and navigate to your newly deployed app
+* Click Runtime tab
+* Click Environment Variables button
+* Add the following entries as User Defined Variables
+
+|Name   |Value  |
+| ----- | ----- |
+| `APP_ID` | Any string that would be hard to guess |
+| `MASTER_KEY` | Any string that would be hard to guess |
+| `PARSE_MOUNT` | `/parse` |
+| `DATABASE_URI` | mongo url entry from VCAP_Services section |
+
 
 ### Optional
-`DATABASE_URI`
-`FILE_KEY`
-`CLIENT_KEY`
-`JS_KEY`
-`REST_KEY`
-`DOTNET_KEY`
-`ALLOW_CLIENT_CLASS_CREATION`
-`ENABLE_ANONYMOUS_USERS`
-`OAUTH`
-`FACEBOOK_APP_IDS`
+|Name   |Value  |
+| ----- | ----- |
+|`DATABASE_URI`||
+|`FILE_KEY`||
+|`CLIENT_KEY`||
+|`JS_KEY`||
+|`REST_KEY`||
+|`DOTNET_KEY`||
+|`ALLOW_CLIENT_CLASS_CREATION`||
+|`ENABLE_ANONYMOUS_USERS`||
+|`OAUTH`||
+|`FACEBOOK_APP_IDS`||
+
+* Restart your application via the dashboard
+* After a few minutes your dashboard should reflect a green `Your app is running` status
+
+# Test your installation
+
+The easiest way to test the installation is by creating an object and requesting it back
+
+* In Postman (or other API tool) Craft a POST to your endpoint
+
+|`VERB`|`URL`|
+| ---- | --- | --- | --- | 
+| POST | `http://app_name.mybluemix.net/parse/classes/GameScore` | 
+
+|`HEADER KEY`|`HEADER VALUE`|
+| --- | --- | 
+X-Parse-Application-Id | `your app_id`
+Content-Type | `application/json`
+
+|`BODY METHOD`|`BODY`|
+| --- | --- | 
+raw | `{"game": "pacman", "score": "123"}`
+
+* You should see a return value similar to this
+
+```
+{
+  "objectId": "c5Ir2HZVHm",
+  "createdAt": "2016-08-26T05:28:16.160Z"
+}
+```
+
+* To query for this object, again we use Postman
+
+|`VERB`|`URL`|
+| ---- | --- | --- | --- | 
+| GET | `http://app_name.mybluemix.net/parse/classes/GameScore` | 
+
+|`HEADER KEY`|`HEADER VALUE`|
+| --- | --- | 
+X-Parse-Application-Id | `your app_id`
+
+* You should see a value similar to this returned
+
+```
+{
+  "results": [
+    {
+      "game": "pacman",
+      "score": "123",
+      "objectId": "c5Ir2HZVHm",
+      "createdAt": "2016-08-26T05:28:16.160Z",
+      "updatedAt": "2016-08-26T05:28:16.160Z"
+    }
+  ]
+}
+```
+
+
 
 ### Privacy Notice
 
